@@ -44,7 +44,7 @@ func parseApproaching(url string) Bus {
 		log.Fatal(err)
 	}
 	bus := Bus{}
-	details := []Detail{}
+	var details []Detail
 	doc.Find("div#main").Each(func(i int, s *goquery.Selection) {
 		if s.Find(".nobusLocationInfo").Length() == 1 {
 			// last bus has gone
@@ -78,12 +78,12 @@ func parseApproaching(url string) Bus {
 			estimate = fmt.Sprint(tm.Format(layout))
 
 		} else {
-			beforeDepurture := s.Find(".info").Text()
+			beforeDeparture := s.Find(".info").Text()
 			removeWhiteSpaceRex := regexp.MustCompile(`\s*`)
-			beforeDepurture = removeWhiteSpaceRex.ReplaceAllString(beforeDepurture, "")
+			beforeDeparture = removeWhiteSpaceRex.ReplaceAllString(beforeDeparture, "")
 			stopsBefore = "始発バス停出発前"
 			removeHourMinutesRex := regexp.MustCompile("（|）|時|分|に|到着予定")
-			arrivalAtStop := removeHourMinutesRex.Split(beforeDepurture, -1)
+			arrivalAtStop := removeHourMinutesRex.Split(beforeDeparture, -1)
 			arrivalAtStop = arrivalAtStop[1:3]
 			arrivalHour, _ := strconv.Atoi(arrivalAtStop[0])
 			arrivalMinutes, _ := strconv.Atoi(arrivalAtStop[1])
@@ -116,8 +116,8 @@ func parseApproaching(url string) Bus {
 }
 
 func main() {
-	// Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/after_last.html"))
+	//Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/after_last.html"))
 	Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/operating.html"))
-	// Buses, _ := json.Marshal(parseApproaching("https://transfer.navitime.biz/tokyubus/smart/location/BusLocationSearchTargetCourse?startId=00240508&poleId=000000001133"))
+	//Buses, _ := json.Marshal(parseApproaching("https://transfer.navitime.biz/tokyubus/smart/location/BusLocationSearchTargetCourse?startId=00240508&poleId=000000001133"))
 	fmt.Println(string(Buses))
 }

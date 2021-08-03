@@ -13,8 +13,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type Bus struct {
-	InOperation bool   `json:"inOperation"`
+type Detail struct {
 	Congestion  string `json:"congestion"`
 	StopsBefore string `json:"stopsBefore"`
 	WaitTime    string `json:"waitTime"`
@@ -24,7 +23,12 @@ type Bus struct {
 	Destination string `json:"destination"`
 }
 
-func parseApproaching(url string) []Bus {
+type Bus struct {
+	InOperation bool     `json:"inOperation"`
+	Details     []Detail `json:"details"`
+}
+
+func parseApproaching(url string) Bus {
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -39,16 +43,18 @@ func parseApproaching(url string) []Bus {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var b []Bus
+	bus := Bus{}
+	details := []Detail{}
 	doc.Find("div#main").Each(func(i int, s *goquery.Selection) {
 		if s.Find(".nobusLocationInfo").Length() == 1 {
 			// last bus has gone
-			b = append(b, Bus{InOperation: false})
+			bus = Bus{InOperation: false}
 			return
 		}
 	})
 	doc.Find("ul#resultList li").Each(func(i int, s *goquery.Selection) {
 		// buses will come
+		bus = Bus{InOperation: true}
 		congestion, _ := s.Find(".congestion-image").Attr("alt")
 		stopsBeforeAndWaitText := s.Find(".info").Text()
 		stopsAndWaitRex := regexp.MustCompile("[0-9]+個前の停留所を発車【[0-9]+分待ち】")
@@ -95,8 +101,7 @@ func parseApproaching(url string) []Bus {
 		courseName := s.Find(".courseName").Text()
 		destination := s.Find(".destination-name").Text()
 
-		b = append(b, Bus{
-			InOperation: true,
+		details = append(details, Detail{
 			Congestion:  congestion,
 			StopsBefore: stopsBefore,
 			WaitTime:    waitTime,
@@ -105,14 +110,14 @@ func parseApproaching(url string) []Bus {
 			Destination: destination,
 			Estimate:    estimate,
 		})
-
 	})
-	return b
+	bus.Details = details
+	return bus
 }
 
 func main() {
-	Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/after_last.html"))
-	// Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/operating.html"))
+	// Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/after_last.html"))
+	Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/operating.html"))
 	// Buses, _ := json.Marshal(parseApproaching("https://transfer.navitime.biz/tokyubus/smart/location/BusLocationSearchTargetCourse?startId=00240508&poleId=000000001133"))
 	fmt.Println(string(Buses))
 }

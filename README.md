@@ -1,5 +1,7 @@
 # approaching_109
+When buses come near bus stop?
 ## Sample Output
+### Operating Buses
 ```json
 {
   "inOperation": true,
@@ -33,5 +35,11 @@
     }
   ]
 }
-
+```
+### Last bus has gone
+```json
+{
+  "inOperation": false,
+  "details": null
+}
 ```

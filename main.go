@@ -14,13 +14,13 @@ import (
 )
 
 type Detail struct {
-	Congestion  string `json:"congestion"`
-	StopsBefore string `json:"stopsBefore"`
-	WaitTime    string `json:"waitTime"`
-	Estimate    string `json:"estimate"`
-	BusNumber   string `json:"busNumber"`
-	CourseName  string `json:"courseName"`
-	Destination string `json:"destination"`
+	CourseName                string `json:"courseName"`
+	Destination               string `json:"destination"`
+	StopsBefore               string `json:"stopsBefore"`
+	WaitAtBusStop             string `json:"waitAtBusStopTime"`
+	EstimateArrivalTimeAtStop string `json:"estimateArrivalTimeAtStop"`
+	Congestion                string `json:"congestion"`
+	BusNumber                 string `json:"busNumber"`
 }
 
 type Bus struct {
@@ -102,13 +102,13 @@ func parseApproaching(url string) Bus {
 		destination := s.Find(".destination-name").Text()
 
 		details = append(details, Detail{
-			Congestion:  congestion,
-			StopsBefore: stopsBefore,
-			WaitTime:    waitTime,
-			BusNumber:   busNumber,
-			CourseName:  courseName,
-			Destination: destination,
-			Estimate:    estimate,
+			Congestion:                congestion,
+			StopsBefore:               stopsBefore,
+			WaitAtBusStop:             waitTime,
+			BusNumber:                 busNumber,
+			CourseName:                courseName,
+			Destination:               destination,
+			EstimateArrivalTimeAtStop: estimate,
 		})
 	})
 	bus.Details = details

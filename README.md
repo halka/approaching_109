@@ -7,31 +7,31 @@ When buses come near bus stop?
   "inOperation": true,
   "details": [
     {
-      "congestion": "空いています",
+      "courseName": "渋４１",
+      "destination": "渋谷駅ゆき",
       "stopsBefore": "6",
-      "waitTime": "11",
-      "estimate": "00:50",
-      "busNumber": "743",
-      "courseName": "渋４１",
-      "destination": "渋谷駅ゆき"
-    },
-    {
+      "waitAtBusStopTime": "11",
+      "estimateArrivalTimeAtStop": "20:41",
       "congestion": "空いています",
-      "stopsBefore": "10",
-      "waitTime": "20",
-      "estimate": "00:59",
-      "busNumber": "1028",
-      "courseName": "渋４１",
-      "destination": "渋谷駅ゆき"
+      "busNumber": "743"
     },
     {
-      "congestion": "",
-      "stopsBefore": "始発バス停出発前",
-      "waitTime": "689",
-      "estimate": "12:09",
-      "busNumber": "1214",
       "courseName": "渋４１",
-      "destination": "渋谷駅ゆき"
+      "destination": "渋谷駅ゆき",
+      "stopsBefore": "10",
+      "waitAtBusStopTime": "20",
+      "estimateArrivalTimeAtStop": "20:50",
+      "congestion": "空いています",
+      "busNumber": "1028"
+    },
+    {
+      "courseName": "渋４１",
+      "destination": "渋谷駅ゆき",
+      "stopsBefore": "始発バス停出発前",
+      "waitAtBusStopTime": "-502",
+      "estimateArrivalTimeAtStop": "12:09",
+      "congestion": "",
+      "busNumber": "1214"
     }
   ]
 }

@@ -9,7 +9,7 @@
 *.dll
 *.so
 *.dylib
-/approaching_109
+./approaching_109
 
 # Test binary, built with `go test -c`
 *.test

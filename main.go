@@ -11,20 +11,24 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/text/unicode/norm"
 )
 
 type Detail struct {
-	CourseName                string `json:"courseName"`
-	Destination               string `json:"destination"`
-	StopsBefore               string `json:"stopsBefore"`
-	WaitAtBusStop             string `json:"waitAtBusStopTime"`
-	EstimateArrivalTimeAtStop string `json:"estimateArrivalTimeAtStop"`
-	Congestion                string `json:"congestion"`
-	BusNumber                 string `json:"busNumber"`
+	CourseName                   string `json:"courseName"`
+	Destination                  string `json:"destination"`
+	StopsBefore                  string `json:"stopsBefore"`
+	WaitAtBusStop                string `json:"waitAtBusStopMinutes"`
+	ETAofBusStop 				 string `json:"ETAofBusStop"`
+	Congestion                   string `json:"congestion"`
+	CongestionIcon               string `json:"congestionIcon"`
+	BusNumber                    string `json:"busNumber"`
 }
 
 type Bus struct {
 	InOperation bool     `json:"inOperation"`
+	Message		string	 `json:"message"`
+	BusStopName	string	 `json:"busStopName"`
 	Details     []Detail `json:"details"`
 }
 
@@ -44,18 +48,30 @@ func parseApproaching(url string) Bus {
 		log.Fatal(err)
 	}
 	bus := Bus{}
+	var busStopName string
 	var details []Detail
 	doc.Find("div#main").Each(func(i int, s *goquery.Selection) {
+		busStopName = s.Find("#allSummary div .big-font").Text()
 		if s.Find(".nobusLocationInfo").Length() == 1 {
 			// last bus has gone
-			bus = Bus{InOperation: false}
+			bus = Bus{
+				InOperation: false,
+				Message: "Today's last bus is gone. or not provided data.",
+				BusStopName: busStopName,
+			}
 			return
 		}
 	})
 	doc.Find("ul#resultList li").Each(func(i int, s *goquery.Selection) {
 		// buses will come
-		bus = Bus{InOperation: true}
+		bus = Bus{
+			InOperation: true,
+			Message: "List of Buses",
+			BusStopName: busStopName,
+		}
 		congestion, _ := s.Find(".congestion-image").Attr("alt")
+		congestionIcon, _ := s.Find(".congestion-image").Attr("src")
+		congestionIcon = strings.Replace(string(congestionIcon), "/blt-storage/pc/img/tokyubus/location/", "", -1)
 		stopsBeforeAndWaitText := s.Find(".info").Text()
 		stopsAndWaitRex := regexp.MustCompile("[0-9]+個前の停留所を発車【[0-9]+分待ち】")
 		stopsBeforeAndWaitTime := stopsAndWaitRex.FindString(stopsBeforeAndWaitText)
@@ -68,8 +84,6 @@ func parseApproaching(url string) Bus {
 		const layout = "15:04"
 
 		if len(stopsAndWait) > 0 {
-			// fmt.Printf("%q %d\n", stopsAndWait, len(stopsAndWait))
-
 			stopsBefore = stopsAndWait[0]
 			waitTime = stopsAndWait[1]
 			tm := time.Now()
@@ -98,17 +112,18 @@ func parseApproaching(url string) Bus {
 
 		busNumber, _ := s.Find(".locationDataArea #locationData img").Attr("title")
 		busNumber = strings.Replace(busNumber, "車両番号:", "", -1)
-		courseName := s.Find(".courseName").Text()
-		destination := s.Find(".destination-name").Text()
+		courseName := string(norm.NFKC.Bytes([]byte(s.Find(".courseName").Text())))
+		destination := strings.Replace(s.Find(".destination-name").Text(), "ゆき", "", -1)
 
 		details = append(details, Detail{
 			Congestion:                congestion,
+			CongestionIcon:			   congestionIcon,
 			StopsBefore:               stopsBefore,
 			WaitAtBusStop:             waitTime,
 			BusNumber:                 busNumber,
 			CourseName:                courseName,
 			Destination:               destination,
-			EstimateArrivalTimeAtStop: estimate,
+			ETAofBusStop: 			   estimate,
 		})
 	})
 	bus.Details = details
@@ -117,7 +132,9 @@ func parseApproaching(url string) Bus {
 
 func main() {
 	//Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/after_last.html"))
+	//Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/zeromin.html"))
 	Buses, _ := json.Marshal(parseApproaching("http://localhost:8888/operating.html"))
 	//Buses, _ := json.Marshal(parseApproaching("https://transfer.navitime.biz/tokyubus/smart/location/BusLocationSearchTargetCourse?startId=00240508&poleId=000000001133"))
+	//Buses, _ := json.Marshal(parseApproaching("https://transfer.navitime.biz/tokyubus/smart/location/BusLocationSearchTargetCourse?startId=00240507&poleId=000000001127"))
 	fmt.Println(string(Buses))
 }

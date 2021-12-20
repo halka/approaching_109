@@ -3,15 +3,17 @@ package parser
 import (
 	"approaching_109/model"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/text/unicode/norm"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/text/unicode/norm"
 )
+
 func SetParams(startId string, poleId string) model.Params {
 	p := model.Params{}
 	p.StartId = startId
@@ -45,7 +47,7 @@ func ParseApproaching(p model.Params) model.Bus {
 			// last bus has gone
 			bus = model.Bus{
 				InOperation: false,
-				Message: "Today's last bus is gone. or not provided data.",
+				Message:     "Today's last bus is gone. or not provided data.",
 				BusStopName: busStopName,
 			}
 			return
@@ -55,12 +57,14 @@ func ParseApproaching(p model.Params) model.Bus {
 		// buses will come
 		bus = model.Bus{
 			InOperation: true,
-			Message: "List of Buses",
+			Message:     "List of Buses",
 			BusStopName: busStopName,
 		}
 		congestion, _ := s.Find(".congestion-image").Attr("alt")
 		congestionIcon, _ := s.Find(".congestion-image").Attr("src")
 		congestionIcon = strings.Replace(string(congestionIcon), "/blt-storage/pc/img/tokyubus/location/", "", -1)
+		congestionLevelRex := regexp.MustCompile("[0-9]+")
+		congestionLevel := congestionLevelRex.FindString(congestionIcon)
 		stopsBeforeAndWaitText := s.Find(".info").Text()
 		stopsAndWaitRex := regexp.MustCompile("[0-9]+個前の停留所を発車【[0-9]+分待ち】")
 		stopsBeforeAndWaitTime := stopsAndWaitRex.FindString(stopsBeforeAndWaitText)
@@ -105,14 +109,15 @@ func ParseApproaching(p model.Params) model.Bus {
 		destination := strings.Replace(s.Find(".destination-name").Text(), "ゆき", "", -1)
 
 		details = append(details, model.Detail{
-			Congestion:                congestion,
-			CongestionIcon:			   congestionIcon,
-			StopsBefore:               stopsBefore,
-			WaitAtBusStop:             waitTime,
-			BusNumber:                 busNumber,
-			CourseName:                courseName,
-			Destination:               destination,
-			ETAofBusStop: 			   estimate,
+			Congestion:         congestion,
+			CongestionIcon:     congestionIcon,
+			CongrestionLevelse: congestionLevel,
+			StopsBefore:        stopsBefore,
+			WaitAtBusStop:      waitTime,
+			BusNumber:          busNumber,
+			CourseName:         courseName,
+			Destination:        destination,
+			ETAofBusStop:       estimate,
 		})
 	})
 	bus.Details = details
